@@ -107,6 +107,8 @@ func gomips64() string {
 
 func goppc64() int {
 	switch v := envOr("GOPPC64", defaultGOPPC64); v {
+	case "power5":
+		return 5
 	case "power8":
 		return 8
 	case "power9":
@@ -114,7 +116,7 @@ func goppc64() int {
 	case "power10":
 		return 10
 	}
-	Error = fmt.Errorf("invalid GOPPC64: must be power8, power9, power10")
+	Error = fmt.Errorf("invalid GOPPC64: must be power5, power8, power9, power10")
 	return int(defaultGOPPC64[len("power")] - '0')
 }
 
@@ -217,6 +219,7 @@ func gogoarchTags() []string {
 		return []string{GOARCH + "." + GOMIPS64}
 	case "ppc64", "ppc64le":
 		var list []string
+		list = append(list, fmt.Sprintf("%s.power%d", GOARCH, 5))
 		for i := 8; i <= GOPPC64; i++ {
 			list = append(list, fmt.Sprintf("%s.power%d", GOARCH, i))
 		}

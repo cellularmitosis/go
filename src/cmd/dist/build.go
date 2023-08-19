@@ -173,7 +173,7 @@ func xinit() {
 
 	b = os.Getenv("GOPPC64")
 	if b == "" {
-		b = "power8"
+		b = "power5"
 	}
 	goppc64 = b
 
@@ -887,8 +887,11 @@ func runInstall(pkg string, ch chan struct{}) {
 		case "power9":
 			asmArgs = append(asmArgs, "-D", "GOPPC64_power9")
 			fallthrough
-		default: // This should always be power8.
+		case "power8":
 			asmArgs = append(asmArgs, "-D", "GOPPC64_power8")
+			fallthrough
+		default:
+			asmArgs = append(asmArgs, "-D", "GOPPC64_power5")
 		}
 	}
 	goasmh := pathf("%s/go_asm.h", workdir)
