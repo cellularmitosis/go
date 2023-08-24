@@ -123,7 +123,7 @@ amd64) mflag=-m64;;
 esac
 if [ "$(uname)" == "Darwin" ]; then
 	# golang.org/issue/5261
-	mflag="$mflag -mmacosx-version-min=10.6"
+	mflag="$mflag -mmacosx-version-min=10.5"
 fi
 # if gcc does not exist and $CC is not set, try clang if available.
 if [ -z "$CC" -a -z "$(type -t gcc)" -a -n "$(type -t clang)" ]; then

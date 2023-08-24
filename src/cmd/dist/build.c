@@ -707,7 +707,7 @@ install(char *dir)
 		vadd(&gccargs, "-fmessage-length=0");
 		if(streq(gohostos, "darwin")) {
 			// golang.org/issue/5261
-			vadd(&gccargs, "-mmacosx-version-min=10.6");
+			vadd(&gccargs, "-mmacosx-version-min=10.5");
 		}
 	}
 	if(ldargs.len == 0 && defaultldflags[0] != '\0') {
