@@ -204,7 +204,9 @@ func cgoLookupPTR(addr string) ([]string, error, bool) {
 	for l := nameinfoLen; l <= maxNameinfoLen; l *= 2 {
 		b = make([]byte, l)
 		gerrno, err = cgoNameinfoPTR(b, sa, salen)
-		if gerrno == 0 || gerrno != C.EAI_OVERFLOW {
+		//if gerrno == 0 || gerrno != C.EAI_OVERFLOW {
+		// On darwin9, EAI_OVERFLOW was EAI_MAX.
+		if gerrno == 0 || gerrno != C.EAI_MAX {
 			break
 		}
 	}

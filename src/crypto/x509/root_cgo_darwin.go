@@ -7,7 +7,7 @@
 package x509
 
 /*
-#cgo CFLAGS: -mmacosx-version-min=10.6 -D__MAC_OS_X_VERSION_MAX_ALLOWED=1080
+#cgo CFLAGS: -std=c99 -mmacosx-version-min=10.6 -D__MAC_OS_X_VERSION_MAX_ALLOWED=1080
 #cgo LDFLAGS: -framework CoreFoundation -framework Security
 
 #include <errno.h>
@@ -15,6 +15,8 @@ package x509
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>
+
+#include <AvailabilityMacros.h>
 
 // FetchPEMRoots_MountainLion is the version of FetchPEMRoots from Go 1.6
 // which still works on OS X 10.8 (Mountain Lion).
@@ -41,7 +43,12 @@ int FetchPEMRoots_MountainLion(CFDataRef *pemRoots) {
 		// Once we support weak imports via cgo we should prefer that, and fall back to this
 		// for older systems.
 		err = SecKeychainItemExport(cert, kSecFormatX509Cert, kSecItemPemArmour, NULL, &data);
+// errSecSuccess became available in Snow Leopard.
+#if defined(MAC_OS_X_VERSION_10_6)
+		if (err != errSecSuccess) {
+#else
 		if (err != noErr) {
+#endif
 			continue;
 		}
 		if (data != NULL) {
@@ -66,7 +73,7 @@ int useOldCode() {
 	sysctlbyname("kern.osrelease", str, &size, NULL, 0);
 	// OS X 10.8 is osrelease "12.*", 10.7 is 11.*, 10.6 is 10.*.
 	// We never supported things before that.
-	return memcmp(str, "12.", 3) == 0 || memcmp(str, "11.", 3) == 0 || memcmp(str, "10.", 3) == 0;
+	return memcmp(str, "12.", 3) == 0 || memcmp(str, "11.", 3) == 0 || memcmp(str, "10.", 3) == 0 || memcmp(str, "9.", 2) == 0;
 }
 
 // FetchPEMRoots fetches the system's list of trusted X.509 root certificates.
@@ -81,6 +88,10 @@ int FetchPEMRoots(CFDataRef *pemRoots, CFDataRef *untrustedPemRoots) {
 	if (useOldCode()) {
 		return FetchPEMRoots_MountainLion(pemRoots);
 	}
+
+// SecCertificateCopyNormalizedSubjectContent and SecCertificateCopyNormalizedIssuerContent
+// became available in Lion.
+#if defined(MAC_OS_X_VERSION_10_7)
 
 	// Get certificates from all domains, not just System, this lets
 	// the user add CAs to their "login" keychain, and Admins to add
@@ -132,7 +143,13 @@ int FetchPEMRoots(CFDataRef *pemRoots, CFDataRef *untrustedPemRoots) {
 				for (int k = 1; k < numDomains; k++) {
 					CFArrayRef domainTrustSettings = NULL;
 					err = SecTrustSettingsCopyTrustSettings(cert, domains[k], &domainTrustSettings);
+// errSecSuccess became available in Snow Leopard.
+#if defined(MAC_OS_X_VERSION_10_6)
 					if (err == errSecSuccess && domainTrustSettings != NULL) {
+#else
+					if (err == noErr && domainTrustSettings != NULL) {
+#endif
+					if (err == noErr && domainTrustSettings != NULL) {
 						if (trustSettings) {
 							CFRelease(trustSettings);
 						}
@@ -196,6 +213,9 @@ int FetchPEMRoots(CFDataRef *pemRoots, CFDataRef *untrustedPemRoots) {
 	*pemRoots = combinedData;
 	*untrustedPemRoots = combinedUntrustedData;
 	return 0;
+#else
+	return -1;
+#endif
 }
 */
 import "C"
